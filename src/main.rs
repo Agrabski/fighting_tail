@@ -2,10 +2,13 @@
 // This example now organizes the logic into a dedicated plugin for better code structure.
 // This code is compatible with Bevy 0.16.1.
 mod camera;
+mod map;
 mod game_actions;
 use bevy::prelude::*;
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap};
+
+use crate::map::HexMapPlugin;
 
 
 
@@ -341,6 +344,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         // Add the new MovementPlugin
         .add_plugins(MovementPlugin)
+        .add_plugins(HexMapPlugin)
         .add_plugins(camera::CameraPlugin)
         // Add setup system
         .add_systems(Startup, setup)
