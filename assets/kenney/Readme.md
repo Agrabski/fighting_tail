@@ -1,0 +1,1 @@
+These assets are temporary, for debug purposes only

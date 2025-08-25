@@ -8,7 +8,7 @@ use bevy::prelude::*;
 use std::cmp::Ordering;
 use std::collections::{BinaryHeap, HashMap};
 
-use crate::map::HexMapPlugin;
+use crate::map::{HexGridPlugin};
 
 
 
@@ -344,7 +344,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         // Add the new MovementPlugin
         .add_plugins(MovementPlugin)
-        .add_plugins(HexMapPlugin)
+        .add_plugins(HexGridPlugin)
         .add_plugins(camera::CameraPlugin)
         // Add setup system
         .add_systems(Startup, setup)
