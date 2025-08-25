@@ -4,11 +4,11 @@
 mod camera;
 mod map;
 mod game_actions;
+mod movement;
+mod units;
 use bevy::prelude::*;
-use std::cmp::Ordering;
-use std::collections::{BinaryHeap, HashMap};
 
-use crate::map::{HexGridPlugin};
+use crate::map::{HexGridPlugin, HexPosition};
 
 
 
@@ -16,18 +16,11 @@ use crate::map::{HexGridPlugin};
 #[derive(Component)]
 pub struct Unit;
 
-/// Component representing a unit's position on the grid.
-#[derive(Component, Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub struct Position {
-    pub x: i32,
-    pub y: i32,
-}
-
 /// Component to hold the unit's calculated path.
 /// The path is a vector of positions representing the steps to take.
 #[derive(Component, Debug)]
 pub struct Path {
-    pub positions: Vec<Position>,
+    pub positions: Vec<HexPosition>,
 }
 
 /// The unit's movement speed in hexes per minute.
@@ -38,7 +31,7 @@ pub struct MovementSpeed(f32);
 #[derive(Event)]
 pub struct MoveUnitEvent {
     pub unit: Entity,
-    pub destination: Position,
+    pub destination: HexPosition,
 }
 
 /// The state of the game, managing player input and unit movement.
@@ -63,114 +56,6 @@ pub struct TurnTimer {
     pub timer: Timer,
 }
 
-// ---
-// Pathfinding (A* Algorithm)
-// ---
-
-/// Node for the A* search algorithm.
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-struct Node {
-    position: Position,
-    cost: u32,
-    heuristic: u32,
-}
-
-impl Node {
-    fn new(position: Position, cost: u32, heuristic: u32) -> Self {
-        Self {
-            position,
-            cost,
-            heuristic,
-        }
-    }
-}
-
-impl Ord for Node {
-    fn cmp(&self, other: &Self) -> Ordering {
-        // A* prioritizes the node with the lowest f_cost (cost + heuristic).
-        other.f_cost().cmp(&self.f_cost())
-    }
-}
-
-impl PartialOrd for Node {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Node {
-    fn f_cost(&self) -> u32 {
-        self.cost + self.heuristic
-    }
-}
-
-/// Heuristic function for A*. Uses Manhattan distance.
-fn heuristic(a: Position, b: Position) -> u32 {
-    ((a.x - b.x).abs() + (a.y - b.y).abs()) as u32
-}
-
-/// Finds the path from a start position to a destination using A*.
-/// This function is agnostic to the turn-based nature of the game.
-fn find_path(start: Position, destination: Position) -> Option<Vec<Position>> {
-    let mut open_set = BinaryHeap::new();
-    let mut came_from: HashMap<Position, Position> = HashMap::new();
-    let mut g_score: HashMap<Position, u32> = HashMap::new();
-
-    open_set.push(Node::new(start, 0, heuristic(start, destination)));
-    g_score.insert(start, 0);
-
-    while let Some(current_node) = open_set.pop() {
-        let current_pos = current_node.position;
-
-        if current_pos == destination {
-            // Reconstruct path
-            let mut path = Vec::new();
-            let mut current = destination;
-            while current != start {
-                path.push(current);
-                current = *came_from.get(&current).unwrap();
-            }
-            path.reverse();
-            return Some(path);
-        }
-
-        // Neighbors (for a simple 2D grid)
-        let neighbors = [
-            Position {
-                x: current_pos.x + 1,
-                y: current_pos.y,
-            },
-            Position {
-                x: current_pos.x - 1,
-                y: current_pos.y,
-            },
-            Position {
-                x: current_pos.x,
-                y: current_pos.y + 1,
-            },
-            Position {
-                x: current_pos.x,
-                y: current_pos.y - 1,
-            },
-        ];
-
-        for neighbor_pos in neighbors.iter() {
-            let tentative_g_score = g_score.get(&current_pos).unwrap() + 1; // Assuming cost is 1 for each step
-
-            if tentative_g_score < *g_score.get(neighbor_pos).unwrap_or(&u32::MAX) {
-                came_from.insert(*neighbor_pos, current_pos);
-                g_score.insert(*neighbor_pos, tentative_g_score);
-                open_set.push(Node::new(
-                    *neighbor_pos,
-                    tentative_g_score,
-                    heuristic(*neighbor_pos, destination),
-                ));
-            }
-        }
-    }
-
-    None // No path found
-}
 
 // ---
 // Bevy Systems

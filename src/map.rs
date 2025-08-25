@@ -17,6 +17,8 @@ use hexx::{shapes, *};
 
 const SPRITE_SIZE: Vec2 = Vec2::new(24.0, 28.0);
 
+pub type HexPosition = Hex;
+
 #[derive(Debug, Resource)]
 struct HexGrid {
     pub entities: HashMap<Hex, Entity>,
