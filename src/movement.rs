@@ -1,8 +1,24 @@
 use std::collections::HashMap;
 
-use bevy::{ecs::component::Component, reflect::Reflect};
+use bevy::{ecs::{component::Component, entity::Entity, event::Event}, reflect::Reflect};
+
+use crate::map::HexPosition;
 
 pub type Kph = f32;
+
+pub struct MovementPlugin;
+
+impl bevy::app::Plugin for MovementPlugin {
+    fn build(&self, app: &mut bevy::prelude::App) {
+        app.register_type::<MovementMode>()
+            .register_type::<MovementConfig>()
+            .register_type::<DifficultTerrain>()
+            .register_type::<MovementStats>()
+            .register_type::<MovementPenaltyReason>()
+            .register_type::<MovemenetPenalty>()
+            .add_event::<MoveUnitEvent>();
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Reflect)]
 pub enum MovementMode {
@@ -42,4 +58,40 @@ pub enum MovementPenaltyReason {
 pub struct MovemenetPenalty {
     pub value: f32,
     pub reason: MovementPenaltyReason,
+}
+
+#[derive(Component, Debug)]
+pub struct Path {
+    pub positions: Vec<HexPosition>,
+}
+
+#[derive(Component, Debug, Reflect)]
+pub struct GamePosition {
+    pub hex: HexPosition,
+}
+
+
+/// Event to trigger a unit's movement to a new destination.
+#[derive(Event)]
+pub struct MoveUnitEvent {
+    pub unit: Entity,
+    pub destination: HexPosition,
+}
+
+pub const PROGRESS_ZERO: f32 = 0.0;
+pub const PROGRESS_COMPLETE: f32 = 100.0;
+#[derive(Component, Debug)]
+pub struct MovingTowards {
+    pub destination: HexPosition,
+    pub progress: f32, 
+}
+
+impl MovingTowards {
+    pub fn new(destination: HexPosition) -> Self {
+        Self {
+            destination,
+            progress: PROGRESS_ZERO,
+        }
+    }
+    
 }
