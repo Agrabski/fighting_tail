@@ -1,8 +1,9 @@
+mod path_finding;
 use std::collections::HashMap;
 
 use bevy::{ecs::{component::Component, entity::Entity, event::Event}, reflect::Reflect};
 
-use crate::map::HexPosition;
+use crate::{map::HexPosition, movement::path_finding::PathFindingPlugin};
 
 pub type Kph = f32;
 
@@ -16,7 +17,8 @@ impl bevy::app::Plugin for MovementPlugin {
             .register_type::<MovementStats>()
             .register_type::<MovementPenaltyReason>()
             .register_type::<MovemenetPenalty>()
-            .add_event::<MoveUnitEvent>();
+            .add_event::<MoveUnitEvent>()
+            .add_plugins(PathFindingPlugin);
     }
 }
 
@@ -62,7 +64,7 @@ pub struct MovemenetPenalty {
 
 #[derive(Component, Debug)]
 pub struct Path {
-    pub positions: Vec<HexPosition>,
+    pub waypoints: Vec<HexPosition>,
 }
 
 #[derive(Component, Debug, Reflect)]

@@ -8,6 +8,7 @@ mod game_actions;
 mod movement;
 mod units;
 use bevy::prelude::*;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use crate::{map::{HexGridPlugin, HexPosition}, movement::{MoveUnitEvent, MovementPlugin}, time::GameTimePlugin, units::{AtomicUnitBundle, Echelon}};
 
@@ -32,6 +33,7 @@ fn setup(mut commands: Commands, mut move_event: EventWriter<MoveUnitEvent>) {
 
 fn main() {
     App::new()
+        .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(DefaultPlugins)
         .add_plugins(MovementPlugin)
         .add_plugins(GameTimePlugin)
