@@ -7,17 +7,15 @@ mod map;
 mod movement;
 mod time;
 mod units;
-use bevy::prelude::*;
-use bevy_inspector_egui::{
-    bevy_egui::EguiPlugin,
-    quick::WorldInspectorPlugin,
-};
+use bevy::{log::LogPlugin, prelude::*};
+use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
+use hexx::Hex;
 
 use crate::{
-    map::{HexGridPlugin, HexPosition},
+    map::{HexGrid, HexGridPlugin, HexPosition},
     movement::{MoveUnitEvent, MovementPlugin},
     time::GameTimePlugin,
-    units::AtomicUnitBundle,
+    units::{AtomicUnitBundle, UnitPlugin},
 };
 
 fn setup(mut commands: Commands, mut move_event: EventWriter<MoveUnitEvent>) {
@@ -38,13 +36,18 @@ fn setup(mut commands: Commands, mut move_event: EventWriter<MoveUnitEvent>) {
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(LogPlugin {
+            filter: "info,wgpu_core=warn,wgpu_hal=warn,naga=warn,bevy_render=warn,bevy_ecs=info,pathfinding=debug,movement=debug".into(),
+            level: bevy::log::Level::DEBUG,
+            ..default()
+        }))
         .add_plugins(EguiPlugin::default())
         .add_plugins(WorldInspectorPlugin::new())
         .add_plugins(MovementPlugin)
         .add_plugins(GameTimePlugin)
         .add_plugins(HexGridPlugin)
         .add_plugins(camera::CameraPlugin)
+        .add_plugins(UnitPlugin)
         .add_systems(Startup, setup)
         .run();
 }

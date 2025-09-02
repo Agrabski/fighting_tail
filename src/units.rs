@@ -1,11 +1,27 @@
 use bevy::{
-    color::LinearRgba, ecs::{bundle::Bundle, component::Component, resource::Resource}, platform::collections::HashMap, reflect::Reflect, sprite::Sprite, transform::components::Transform
+    app::{App, Plugin},
+    color::LinearRgba,
+    ecs::{bundle::Bundle, component::Component, resource::Resource},
+    platform::collections::HashMap,
+    reflect::Reflect,
+    sprite::{Anchor, Sprite},
+    transform::components::Transform,
 };
 
 use crate::{
     map::HexPosition,
-    movement::{GamePosition, MovementStats},
+    movement::{GamePosition, MovementConfig, MovementMode, MovementStats},
 };
+
+pub struct UnitPlugin;
+impl Plugin for UnitPlugin {
+    fn build(&self, app: &mut App) {
+        app.register_type::<Unit>()
+            .register_type::<Echelon>()
+            .register_type::<UnitDetails>()
+            .register_type::<UnitTypeList>();
+    }
+}
 
 pub type UnitTypeId = String;
 
@@ -43,7 +59,8 @@ pub struct AtomicUnitBundle {
     atomic: AtomicUnit,
     position: GamePosition,
     sprite: Sprite,
-    transform: Transform
+    transform: Transform,
+    config: MovementConfig,
 }
 
 impl AtomicUnitBundle {
@@ -59,8 +76,12 @@ impl AtomicUnitBundle {
             sprite: Sprite {
                 custom_size: Some(bevy::prelude::Vec2::new(20.0, 20.0)),
                 color: bevy::prelude::Color::LinearRgba(LinearRgba::RED),
+                anchor: Anchor::Center,
                 ..Default::default()
-            }
+            },
+            config: MovementConfig {
+                mode: MovementMode::Strategic,
+            },
         }
     }
 }

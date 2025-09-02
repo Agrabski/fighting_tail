@@ -17,6 +17,9 @@ impl bevy::app::Plugin for MovementPlugin {
             .register_type::<MovementStats>()
             .register_type::<MovementPenaltyReason>()
             .register_type::<MovemenetPenalty>()
+            .register_type::<Path>()
+            .register_type::<GamePosition>()
+            .register_type::<MovingTowards>()
             .add_event::<MoveUnitEvent>()
             .add_plugins(PathFindingPlugin);
     }
@@ -62,7 +65,7 @@ pub struct MovemenetPenalty {
     pub reason: MovementPenaltyReason,
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Reflect)]
 pub struct Path {
     pub waypoints: Vec<HexPosition>,
 }
@@ -82,7 +85,7 @@ pub struct MoveUnitEvent {
 
 pub const PROGRESS_ZERO: f32 = 0.0;
 pub const PROGRESS_COMPLETE: f32 = 100.0;
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Reflect)]
 pub struct MovingTowards {
     pub destination: HexPosition,
     pub progress: f32, 

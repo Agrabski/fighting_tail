@@ -16,7 +16,7 @@ use bevy::{
 };
 use hexx::{algorithms::a_star, shapes, *};
 
-use crate::movement::{GamePosition, MovementConfig, MovingTowards};
+use crate::movement::{GamePosition, MovementConfig, MovingTowards, PROGRESS_COMPLETE};
 
 const SPRITE_SIZE: Vec2 = Vec2::new(24.0, 28.0);
 pub const HEX_RADIUS_IN_METERS: f32 = 100.0;
@@ -86,26 +86,27 @@ fn setup_grid(
 
 fn sync_tranforms(
     grid: Res<HexGrid>,
-    mut query: Query<
-        (&GamePosition, &mut Transform, Option<&MovingTowards>),
-        Changed<GamePosition>,
-    >,
+    mut query: Query<(&GamePosition, &mut Transform, &MovingTowards)>,
 ) {
     for (game_pos, mut transform, moving) in query.iter_mut() {
         let world_pos = grid.to_global_coordinates(game_pos.hex);
-        if let Some(moving) = moving {
-            let target_pos = grid.to_global_coordinates(moving.destination);
-            let direction = (target_pos - world_pos).normalize_or_zero();
-            transform.translation.x += direction.x * 2.0;
-            transform.translation.y += direction.y * 2.0;
-            if (transform.translation.x - target_pos.x).abs() < 2.0
-                && (transform.translation.y - target_pos.y).abs() < 2.0
-            {
-                transform.translation.x = target_pos.x;
-                transform.translation.y = target_pos.y;
-            }
-            continue;
-        }
+
+        let target_pos = grid.to_global_coordinates(moving.destination);
+        let average = target_pos * (moving.progress / PROGRESS_COMPLETE)
+            + world_pos * (1.0 - moving.progress / PROGRESS_COMPLETE);
+        transform.translation = average.extend(transform.translation.z);
+    }
+}
+
+fn sync_tranforms_stationary(
+    grid: Res<HexGrid>,
+    mut query: Query<
+        (&GamePosition, &mut Transform),
+        (Changed<GamePosition>, Without<MovingTowards>),
+    >,
+) {
+    for (game_pos, mut transform) in query.iter_mut() {
+        let world_pos = grid.to_global_coordinates(game_pos.hex);
         transform.translation.x = world_pos.x;
         transform.translation.y = world_pos.y;
     }
@@ -116,6 +117,6 @@ pub struct HexGridPlugin;
 impl Plugin for HexGridPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_grid)
-            .add_systems(Update, sync_tranforms);
+            .add_systems(Update, (sync_tranforms, sync_tranforms_stationary));
     }
 }
