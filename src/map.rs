@@ -1,9 +1,18 @@
 use bevy::{
-    app::{App, Plugin, Startup}, asset::{AssetServer, Assets}, ecs::{
+    app::{App, Plugin, Startup},
+    asset::{AssetServer, Assets},
+    ecs::{
         entity::Entity,
         resource::Resource,
         system::{Commands, Res, ResMut},
-    }, image::{TextureAtlas, TextureAtlasLayout}, math::uvec2, platform::collections::HashMap, prelude::*, sprite::Sprite, transform::components::Transform, utils::default
+    },
+    image::{TextureAtlas, TextureAtlasLayout},
+    math::uvec2,
+    platform::collections::HashMap,
+    prelude::*,
+    sprite::Sprite,
+    transform::components::Transform,
+    utils::default,
 };
 use hexx::{algorithms::a_star, shapes, *};
 
@@ -25,12 +34,12 @@ impl HexGrid {
         self.entities.get(&hex).cloned()
     }
 
-    pub fn to_global_coordinates(&self, hex:Hex) -> Vec2 {
+    pub fn to_global_coordinates(&self, hex: Hex) -> Vec2 {
         self.layout.hex_to_world_pos(hex)
     }
 
-    pub fn find_path(&self, start:Hex, end:Hex, config: &MovementConfig) -> Vec<Hex> {
-        a_star(start, end, |a,b| Some( 1)).expect("Pathfinding failed")
+    pub fn find_path(&self, start: Hex, end: Hex, config: &MovementConfig) -> Vec<Hex> {
+        a_star(start, end, |a, b| Some(1)).expect("Pathfinding failed")
     }
 }
 
@@ -44,7 +53,10 @@ fn setup_grid(
         TextureAtlasLayout::from_grid(uvec2(120, 140), 7, 6, Some(uvec2(2, 2)), None);
     let atlas_layout = atlas_layouts.add(atlas_layout);
     let layout = HexLayout::new(HexOrientation::Pointy).with_rect_size(SPRITE_SIZE);
-    let entities = shapes::hexagon(Hex::ZERO, 150)
+    let parent = commands
+        .spawn((Name::new("Hex Grid"), Transform::default()))
+        .id();
+    let entities: HashMap<Hex, Entity> = shapes::hexagon(Hex::ZERO, 150)
         .enumerate()
         .map(|(i, coord)| {
             let pos = layout.hex_to_world_pos(coord);
@@ -61,8 +73,11 @@ fn setup_grid(
                         ..default()
                     },
                     Transform::from_xyz(pos.x, pos.y, 0.0),
+                    Name::new(format!("Hex ({}, {})", coord.x, coord.y)),
                 ))
                 .id();
+            let mut c = commands.entity(parent);
+            c.add_child(entity);
             (coord, entity)
         })
         .collect();
@@ -71,7 +86,10 @@ fn setup_grid(
 
 fn sync_tranforms(
     grid: Res<HexGrid>,
-    mut query: Query<(&GamePosition, &mut Transform, Option<&MovingTowards>), Changed<GamePosition>>,
+    mut query: Query<
+        (&GamePosition, &mut Transform, Option<&MovingTowards>),
+        Changed<GamePosition>,
+    >,
 ) {
     for (game_pos, mut transform, moving) in query.iter_mut() {
         let world_pos = grid.to_global_coordinates(game_pos.hex);
@@ -98,6 +116,6 @@ pub struct HexGridPlugin;
 impl Plugin for HexGridPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_grid)
-        .add_systems(Update, sync_tranforms);
+            .add_systems(Update, sync_tranforms);
     }
 }
