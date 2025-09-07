@@ -1,7 +1,8 @@
+mod supply;
 use bevy::{
     app::{App, Plugin},
     color::LinearRgba,
-    ecs::{bundle::Bundle, component::Component, resource::Resource},
+    ecs::{bundle::Bundle, component::Component, name::Name, resource::Resource},
     platform::collections::HashMap,
     reflect::Reflect,
     sprite::{Anchor, Sprite},
@@ -11,6 +12,7 @@ use bevy::{
 use crate::{
     map::HexPosition,
     movement::{GamePosition, MovementConfig, MovementMode, MovementStats},
+    units::supply::SupplyPlugin,
 };
 
 pub struct UnitPlugin;
@@ -19,7 +21,8 @@ impl Plugin for UnitPlugin {
         app.register_type::<Unit>()
             .register_type::<Echelon>()
             .register_type::<UnitDetails>()
-            .register_type::<UnitTypeList>();
+            .register_type::<UnitTypeList>()
+            .add_plugins(SupplyPlugin);
     }
 }
 
@@ -61,11 +64,13 @@ pub struct AtomicUnitBundle {
     sprite: Sprite,
     transform: Transform,
     config: MovementConfig,
+    name: Name,
 }
 
 impl AtomicUnitBundle {
     pub fn new(unit_type: UnitTypeId, position: HexPosition) -> Self {
         Self {
+            name: Name::new(unit_type.clone()),
             unit: Unit {
                 unit_type,
                 echelon: Echelon::Squad,

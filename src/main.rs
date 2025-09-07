@@ -2,19 +2,22 @@ mod camera;
 mod game_actions;
 mod map;
 mod movement;
+mod resources;
 mod time;
 mod unit_managment;
-mod user_interface;
 mod units;
+mod user_interface;
 use bevy::{log::LogPlugin, prelude::*};
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 
 use crate::{
     map::{HexGridPlugin, HexPosition},
     movement::{MoveUnitEvent, MovementPlugin},
+    resources::ResourcesPlugin,
     time::GameTimePlugin,
     unit_managment::UnitManagementPlugin,
-    units::{AtomicUnitBundle, UnitPlugin}, user_interface::UserInterfacePlugin,
+    units::{AtomicUnitBundle, UnitPlugin},
+    user_interface::UserInterfacePlugin,
 };
 
 fn setup(mut commands: Commands, mut move_event: EventWriter<MoveUnitEvent>) {
@@ -48,6 +51,7 @@ fn main() {
         .add_plugins(UnitPlugin)
         .add_plugins(UnitManagementPlugin)
         .add_plugins(UserInterfacePlugin)
+        .add_plugins(ResourcesPlugin)
         .add_systems(Startup, setup)
         .run();
 }
