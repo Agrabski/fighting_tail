@@ -1,25 +1,23 @@
-// A complete, self-contained Bevy system for pseudo-turn-based unit movement on a grid.
-// This example now organizes the logic into a dedicated plugin for better code structure.
-// This code is compatible with Bevy 0.16.1.
 mod camera;
 mod game_actions;
 mod map;
 mod movement;
 mod time;
+mod unit_managment;
+mod user_interface;
 mod units;
 use bevy::{log::LogPlugin, prelude::*};
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
-use hexx::Hex;
 
 use crate::{
-    map::{HexGrid, HexGridPlugin, HexPosition},
+    map::{HexGridPlugin, HexPosition},
     movement::{MoveUnitEvent, MovementPlugin},
     time::GameTimePlugin,
-    units::{AtomicUnitBundle, UnitPlugin},
+    unit_managment::UnitManagementPlugin,
+    units::{AtomicUnitBundle, UnitPlugin}, user_interface::UserInterfacePlugin,
 };
 
 fn setup(mut commands: Commands, mut move_event: EventWriter<MoveUnitEvent>) {
-    // Spawn a unit at (0, 0)
     let unit = commands
         .spawn(AtomicUnitBundle::new(
             "Infantry".to_string(),
@@ -48,6 +46,8 @@ fn main() {
         .add_plugins(HexGridPlugin)
         .add_plugins(camera::CameraPlugin)
         .add_plugins(UnitPlugin)
+        .add_plugins(UnitManagementPlugin)
+        .add_plugins(UserInterfacePlugin)
         .add_systems(Startup, setup)
         .run();
 }

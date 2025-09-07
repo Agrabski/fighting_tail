@@ -38,6 +38,10 @@ impl HexGrid {
         self.layout.hex_to_world_pos(hex)
     }
 
+    pub fn to_hex_coordinates(&self, pos: Vec2) -> Hex {
+        self.layout.world_pos_to_hex(pos)
+    }
+
     pub fn find_path(&self, start: Hex, end: Hex, config: &MovementConfig) -> Vec<Hex> {
         a_star(start, end, |a, b| Some(1)).expect("Pathfinding failed")
     }
