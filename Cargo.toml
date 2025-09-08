@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 bevy = {version="0.16.1"}
 bevy-inspector-egui = "0.33.1"
+bevy_lunex = "0.4.2"
 hexx = {version = "0.21.0", features = ["bevy", "algorithms"]}
 leafwing-input-manager = "0.17.1"
 

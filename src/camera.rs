@@ -2,6 +2,8 @@ use std::ops::DerefMut;
 
 use bevy::app::App;
 use bevy::prelude::*;
+use bevy::render::view::RenderLayers;
+use bevy_lunex::UiSourceCamera;
 use leafwing_input_manager::prelude::*;
 
 use crate::game_actions::GameActions;
@@ -37,6 +39,9 @@ const DEFAULT_CAMERA_ZOOM: f32 = 0.05;
 fn setup_camera(mut commands: Commands) {
     commands.spawn((
         Camera2d,
+        UiSourceCamera::<0>,
+        Transform::from_translation(Vec3::Z * 1000.0),
+        RenderLayers::from_layers(&[0, 1]),
         Projection::Orthographic(OrthographicProjection::default_2d()),
         InputMap::new([
             (GameActions::MoveUp, KeyCode::KeyW),
@@ -45,7 +50,7 @@ fn setup_camera(mut commands: Commands) {
             (GameActions::MoveRight, KeyCode::KeyD),
             (GameActions::ZoomIn, KeyCode::KeyQ),
             (GameActions::ZoomOut, KeyCode::KeyE),
-        ])
+        ]),
     ));
 }
 
@@ -58,16 +63,15 @@ fn update_camera(
         let delta = time.delta_secs();
 
         if let Projection::Orthographic(projection) = projection.deref_mut() {
-            let zoom =
-                projection.scale.ln() + (get_zoom(input) * settings.zoom_speed * delta);
+            let zoom = projection.scale.ln() + (get_zoom(input) * settings.zoom_speed * delta);
             projection.scale = zoom.exp().clamp(MIN_ZOOM, MAX_ZOOM);
             if projection.scale == 0.0 {
                 projection.scale = DEFAULT_CAMERA_ZOOM;
             }
-            let movement = get_movement(input) * (settings.movement_speed * delta * projection.scale);
+            let movement =
+                get_movement(input) * (settings.movement_speed * delta * projection.scale);
             transform.translation += movement;
         }
-
     }
 }
 

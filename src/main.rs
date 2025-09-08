@@ -9,6 +9,7 @@ mod units;
 mod user_interface;
 use bevy::{log::LogPlugin, prelude::*};
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
+use bevy_lunex::UiLunexPlugins;
 
 use crate::{
     map::{HexGridPlugin, HexPosition},
@@ -19,6 +20,13 @@ use crate::{
     units::{AtomicUnitBundle, UnitPlugin},
     user_interface::UserInterfacePlugin,
 };
+
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum GameState {
+    MainMenu,
+    Running,
+    Paused,
+}
 
 fn setup(mut commands: Commands, mut move_event: EventWriter<MoveUnitEvent>) {
     let unit = commands
@@ -53,5 +61,7 @@ fn main() {
         .add_plugins(UserInterfacePlugin)
         .add_plugins(ResourcesPlugin)
         .add_systems(Startup, setup)
+        .add_plugins((UiLunexPlugins))
+        .insert_state(GameState::Running)
         .run();
 }

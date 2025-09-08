@@ -1,3 +1,5 @@
+mod theme;
+mod unit_list;
 use bevy::{
     app::{App, Plugin, Update},
     ecs::{
@@ -10,7 +12,6 @@ use bevy::{
     input::{common_conditions::input_just_pressed, mouse::MouseButton},
     log::debug,
     math::Vec2,
-    picking::events::Move,
     render::camera::Camera,
     transform::components::{GlobalTransform, Transform},
     window::{PrimaryWindow, Window},
@@ -18,8 +19,9 @@ use bevy::{
 
 use crate::{
     map::HexGrid,
-    unit_managment::{SelectUnitEvent, orders::MoveOrderIssuedEvent},
+    unit_managment::{orders::MoveOrderIssuedEvent, SelectUnitEvent},
     units::Unit,
+    user_interface::{theme::ThemePlugin, unit_list::UnitListPlugin},
 };
 
 pub struct UserInterfacePlugin;
@@ -32,7 +34,8 @@ impl Plugin for UserInterfacePlugin {
                 mouse_left_click.run_if(input_just_pressed(MouseButton::Left)),
                 mouse_right_click.run_if(input_just_pressed(MouseButton::Right)),
             ),
-        );
+        )
+        .add_plugins((UnitListPlugin, ThemePlugin));
     }
 }
 

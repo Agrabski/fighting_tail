@@ -16,6 +16,6 @@ impl Plugin for SupplyPlugin {
 #[derive(Debug, Reflect, Component)]
 pub struct SupplyStorage {
     pub storage: Vec<ResourceStack>,
-    pub max_weight: WeightInKilograms,
+    pub max_weight: Option<WeightInKilograms>,
     pub max_volume: Option<VolumeInLitters>,
 }
