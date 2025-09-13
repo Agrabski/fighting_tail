@@ -7,9 +7,10 @@ mod time;
 mod unit_managment;
 mod units;
 mod user_interface;
+
 use bevy::{log::LogPlugin, prelude::*};
+use bevy_hui::HuiPlugin;
 use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
-use bevy_lunex::UiLunexPlugins;
 
 use crate::{
     map::{HexGridPlugin, HexPosition},
@@ -61,7 +62,7 @@ fn main() {
         .add_plugins(UserInterfacePlugin)
         .add_plugins(ResourcesPlugin)
         .add_systems(Startup, setup)
-        .add_plugins((UiLunexPlugins))
+        .add_plugins(HuiPlugin)
         .insert_state(GameState::Running)
         .run();
 }

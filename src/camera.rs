@@ -3,10 +3,12 @@ use std::ops::DerefMut;
 use bevy::app::App;
 use bevy::prelude::*;
 use bevy::render::view::RenderLayers;
-use bevy_lunex::UiSourceCamera;
 use leafwing_input_manager::prelude::*;
 
 use crate::game_actions::GameActions;
+
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone, Reflect)]
+pub struct CameraSetup;
 
 pub struct CameraPlugin;
 //todo: camera movement should be independent of game logic clock
@@ -20,7 +22,7 @@ impl Plugin for CameraPlugin {
         });
 
         app.add_plugins(InputManagerPlugin::<GameActions>::default());
-        app.add_systems(Startup, setup_camera);
+        app.add_systems(Startup, setup_camera.in_set(CameraSetup));
         app.add_systems(Update, update_camera);
     }
 }
@@ -38,8 +40,9 @@ const DEFAULT_CAMERA_ZOOM: f32 = 0.05;
 
 fn setup_camera(mut commands: Commands) {
     commands.spawn((
+        Name::new("Main Camera"),
+        Camera::default(),
         Camera2d,
-        UiSourceCamera::<0>,
         Transform::from_translation(Vec3::Z * 1000.0),
         RenderLayers::from_layers(&[0, 1]),
         Projection::Orthographic(OrthographicProjection::default_2d()),
