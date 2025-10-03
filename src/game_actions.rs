@@ -9,4 +9,5 @@ pub enum GameActions {
     MoveRight,
     ZoomIn,
     ZoomOut,
+    Select
 }

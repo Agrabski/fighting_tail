@@ -1,5 +1,5 @@
 pub mod orders;
-mod selection;
+pub mod selection;
 use bevy::{
     app::{App, Plugin, Update},
     ecs::{

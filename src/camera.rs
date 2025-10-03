@@ -1,4 +1,4 @@
-use std::ops::DerefMut;
+use std::ops::{Deref, DerefMut};
 
 use bevy::app::App;
 use bevy::prelude::*;
@@ -53,28 +53,27 @@ fn setup_camera(mut commands: Commands) {
             (GameActions::MoveRight, KeyCode::KeyD),
             (GameActions::ZoomIn, KeyCode::KeyQ),
             (GameActions::ZoomOut, KeyCode::KeyE),
-        ]),
+        ])
+        .with(GameActions::Select, MouseButton::Left),
     ));
 }
 
 fn update_camera(
-    mut query: Query<(&mut Transform, &mut Projection, &ActionState<GameActions>), With<Camera2d>>,
+    mut query: Single<(&mut Transform, &mut Projection, &ActionState<GameActions>), With<Camera2d>>,
     settings: Res<CameraSettings>,
     time: Res<Time>,
 ) {
-    if let Ok((mut transform, mut projection, input)) = query.single_mut() {
-        let delta = time.delta_secs();
+    let (transform, projection, input) = query.deref_mut();
+    let delta = time.delta_secs();
 
-        if let Projection::Orthographic(projection) = projection.deref_mut() {
-            let zoom = projection.scale.ln() + (get_zoom(input) * settings.zoom_speed * delta);
-            projection.scale = zoom.exp().clamp(MIN_ZOOM, MAX_ZOOM);
-            if projection.scale == 0.0 {
-                projection.scale = DEFAULT_CAMERA_ZOOM;
-            }
-            let movement =
-                get_movement(input) * (settings.movement_speed * delta * projection.scale);
-            transform.translation += movement;
+    if let Projection::Orthographic(projection) = projection.deref_mut() {
+        let zoom = projection.scale.ln() + (get_zoom(input) * settings.zoom_speed * delta);
+        projection.scale = zoom.exp().clamp(MIN_ZOOM, MAX_ZOOM);
+        if projection.scale == 0.0 {
+            projection.scale = DEFAULT_CAMERA_ZOOM;
         }
+        let movement = get_movement(input) * (settings.movement_speed * delta * projection.scale);
+        transform.translation += movement;
     }
 }
 
