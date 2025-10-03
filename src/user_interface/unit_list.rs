@@ -33,15 +33,18 @@ fn setup_unit_list(
             entity_commands.insert(UnitListSlotMarker);
         },
     );
-    commands.spawn((
-        HtmlNode(server.load("ui/templates/hud/unit_list/unit_list.html")),
-        UnitListComponent,
-    ));
+    html_comps.register_with_spawn_fn(
+        "unit_list",
+        server.load("ui/templates/hud/unit_list/unit_list.html"),
+        |mut c| {
+            c.insert(UnitListComponent);
+        },
+    );
 }
 
 fn on_unit_selected(
     mut events: EventReader<SelectUnitEvent>,
-    list_ui: Single<Entity, With<UnitListComponent>>,
+    list_ui: Single<Entity, With<UnitListSlotMarker>>,
     mut commands: Commands,
     server: Res<AssetServer>,
 ) {
