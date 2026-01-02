@@ -12,7 +12,7 @@ use bevy::{
 use crate::{
     map::{HEX_RADIUS_IN_METERS, HexGrid},
     movement::{
-        GamePosition, Kph, MoveUnitEvent, MovementConfig, MovingTowards, PROGRESS_COMPLETE,
+        GamePosition, Kph, MoveUnitMessage, MovementConfig, MovingTowards, PROGRESS_COMPLETE,
         PROGRESS_ZERO, Path,
     },
 };
@@ -26,7 +26,7 @@ impl Plugin for PathFindingPlugin {
 }
 
 fn calculate_path(
-    mut events: EventReader<MoveUnitEvent>,
+    mut events: EventReader<MoveUnitMessage>,
     query: Query<(&GamePosition, &MovementConfig)>,
     grid: Res<HexGrid>,
     mut commands: Commands,

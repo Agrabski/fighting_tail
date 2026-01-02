@@ -81,7 +81,6 @@ impl AtomicUnitBundle {
             sprite: Sprite {
                 custom_size: Some(bevy::prelude::Vec2::new(20.0, 20.0)),
                 color: bevy::prelude::Color::LinearRgba(LinearRgba::RED),
-                anchor: Anchor::Center,
                 ..Default::default()
             },
             config: MovementConfig {

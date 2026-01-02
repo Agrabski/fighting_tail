@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-bevy = { version = "0.16.1" }
-bevy-inspector-egui = "0.33.1"
-bevy_hui = "0.4.0"
-hexx = { version = "0.21.0", features = ["bevy", "algorithms"] }
-leafwing-input-manager = "0.17.1"
+bevy = { version = "0.17.3" }
+bevy-inspector-egui = "0.35.0"
+bevy_hui = { branch = "master", git = "https://github.com/Lommix/bevy_hui.git" }
+hexx = { version = "0.23.0", features = ["bevy", "algorithms"] }
+leafwing-input-manager = "0.19.0"
 
 
 [profile.dev]

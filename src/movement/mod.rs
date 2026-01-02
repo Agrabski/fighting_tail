@@ -1,7 +1,10 @@
 mod path_finding;
 use std::collections::HashMap;
 
-use bevy::{ecs::{component::Component, entity::Entity, event::Event}, reflect::Reflect};
+use bevy::{
+    ecs::{component::Component, entity::Entity, event::Event, message::Message},
+    reflect::Reflect,
+};
 
 use crate::{map::HexPosition, movement::path_finding::PathFindingPlugin};
 
@@ -20,7 +23,7 @@ impl bevy::app::Plugin for MovementPlugin {
             .register_type::<Path>()
             .register_type::<GamePosition>()
             .register_type::<MovingTowards>()
-            .add_event::<MoveUnitEvent>()
+            .add_event::<MoveUnitMessage>()
             .add_plugins(PathFindingPlugin);
     }
 }
@@ -37,9 +40,7 @@ pub struct MovementConfig {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Reflect)]
-pub enum DifficultTerrain{
-
-}
+pub enum DifficultTerrain {}
 
 #[derive(Debug, Clone, Reflect, Default)]
 pub struct MovementStats {
@@ -75,10 +76,9 @@ pub struct GamePosition {
     pub hex: HexPosition,
 }
 
-
 /// Event to trigger a unit's movement to a new destination.
-#[derive(Event)]
-pub struct MoveUnitEvent {
+#[derive(Message)]
+pub struct MoveUnitMessage {
     pub unit: Entity,
     pub destination: HexPosition,
 }
@@ -88,7 +88,7 @@ pub const PROGRESS_COMPLETE: f32 = 100.0;
 #[derive(Component, Debug, Reflect)]
 pub struct MovingTowards {
     pub destination: HexPosition,
-    pub progress: f32, 
+    pub progress: f32,
 }
 
 impl MovingTowards {
@@ -98,5 +98,4 @@ impl MovingTowards {
             progress: PROGRESS_ZERO,
         }
     }
-    
 }

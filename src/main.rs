@@ -14,7 +14,7 @@ use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 
 use crate::{
     map::{HexGridPlugin, HexPosition},
-    movement::{MoveUnitEvent, MovementPlugin},
+    movement::{MoveUnitMessage, MovementPlugin},
     resources::ResourcesPlugin,
     time::GameTimePlugin,
     unit_managment::UnitManagementPlugin,
@@ -29,7 +29,7 @@ pub enum GameState {
     Paused,
 }
 
-fn setup(mut commands: Commands, mut move_event: EventWriter<MoveUnitEvent>) {
+fn setup(mut commands: Commands, mut move_event: MessageWriter<MoveUnitMessage>) {
     let unit = commands
         .spawn(AtomicUnitBundle::new(
             "Infantry".to_string(),
@@ -38,7 +38,7 @@ fn setup(mut commands: Commands, mut move_event: EventWriter<MoveUnitEvent>) {
         .id();
 
     // Send a movement event to the unit to move to (10, 5)
-    move_event.write(MoveUnitEvent {
+    move_event.write(MoveUnitMessage {
         unit,
         destination: HexPosition { x: 10, y: 5 },
     });

@@ -11,7 +11,7 @@ use bevy_hui::prelude::{HtmlComponents, HtmlFunctions, HtmlNode, TemplatePropert
 
 use crate::{
     camera::CameraSetup,
-    unit_managment::SelectUnitEvent,
+    unit_managment::SelectUnitMessage,
     units::{self, Unit},
 };
 
@@ -61,7 +61,7 @@ fn setup_unit_list(
 }
 
 fn on_unit_selected(
-    mut events: EventReader<SelectUnitEvent>,
+    mut events: EventReader<SelectUnitMessage>,
     list_ui: Single<Entity, With<UnitListSlotMarker>>,
     mut commands: Commands,
     server: Res<AssetServer>,

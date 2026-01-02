@@ -1,8 +1,8 @@
 use std::ops::{Deref, DerefMut};
 
 use bevy::app::App;
+use bevy::camera::visibility::RenderLayers;
 use bevy::prelude::*;
-use bevy::render::view::RenderLayers;
 use leafwing_input_manager::prelude::*;
 
 use crate::game_actions::GameActions;
