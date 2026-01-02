@@ -1,5 +1,10 @@
 <template>
+    <property
+        name="unit_name"
+        value="Unit Name"
+    />
+    <property name="action" />
     <node>
-        <text>test</text>
+        <text on_press="{action}">{unit_name}</text>
     </node>
 </template>

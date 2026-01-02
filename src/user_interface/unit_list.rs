@@ -1,24 +1,30 @@
 use bevy::{
     asset::AssetServer,
     ecs::{
-        schedule::IntoScheduleConfigs,
+        schedule::{IntoScheduleConfigs, common_conditions},
         system::{Commands, Res},
     },
     prelude::*,
     reflect::Reflect,
 };
-use bevy_hui::prelude::{HtmlComponents, HtmlFunctions, HtmlNode};
+use bevy_hui::prelude::{HtmlComponents, HtmlFunctions, HtmlNode, TemplateProperties};
 
-use crate::{camera::CameraSetup, unit_managment::SelectUnitEvent};
+use crate::{
+    camera::CameraSetup,
+    unit_managment::SelectUnitEvent,
+    units::{self, Unit},
+};
 
 pub struct UnitListPlugin;
 
 impl Plugin for UnitListPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_unit_list.after(CameraSetup))
-            .add_systems(Update, on_unit_selected);
+            .add_systems(Update, (on_unit_selected, setup_unit_list_element));
     }
 }
+
+const SELECT_UNIT_ELEMENT_FN: &str = "user_interface::unit_list::select_unit";
 
 fn setup_unit_list(
     server: Res<AssetServer>,
@@ -40,6 +46,18 @@ fn setup_unit_list(
             c.insert(UnitListComponent);
         },
     );
+
+    html_funcs.register(
+        SELECT_UNIT_ELEMENT_FN,
+        |input: In<Entity>, mut cmd: Commands| {
+            /*
+            cmd.entity(input.entity()).add(|cmd| {
+                if let Some(selected) = units::get_selected_unit() {
+                    cmd.insert(SelectUnitEvent { unit: selected });
+                }
+            }); */
+        },
+    );
 }
 
 fn on_unit_selected(
@@ -49,13 +67,29 @@ fn on_unit_selected(
     server: Res<AssetServer>,
 ) {
     for event in events.read() {
-        // Add a new element to the list for the selected unit
         commands.entity(*list_ui).with_children(|parent| {
             parent.spawn((
                 HtmlNode(server.load("ui/templates/hud/unit_list/unit_list_element.html")),
                 UnitListElementComponent { unit: event.unit },
+                TemplateProperties::default().with("action", SELECT_UNIT_ELEMENT_FN),
             ));
         });
+    }
+}
+
+fn setup_unit_list_element(
+    mut q: Query<
+        (&mut TemplateProperties, &UnitListElementComponent),
+        Added<UnitListElementComponent>,
+    >,
+    units: Query<&Name, With<Unit>>,
+) {
+    for (mut props, element) in q.iter_mut() {
+        if let Ok(name) = units.get(element.unit) {
+            props.set("unit_name", &name.to_string());
+        } else {
+            props.set("unit_name", "Unknown");
+        }
     }
 }
 
