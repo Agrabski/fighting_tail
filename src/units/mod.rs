@@ -1,13 +1,6 @@
 mod supply;
-use bevy::{
-    app::{App, Plugin},
-    color::LinearRgba,
-    ecs::{bundle::Bundle, component::Component, name::Name, resource::Resource},
-    platform::collections::HashMap,
-    reflect::Reflect,
-    sprite::{Anchor, Sprite},
-    transform::components::Transform,
-};
+use bevy::prelude::*;
+use bevy::{color::LinearRgba, platform::collections::HashMap};
 
 use crate::{
     map::HexPosition,

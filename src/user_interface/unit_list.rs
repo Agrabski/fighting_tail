@@ -1,18 +1,18 @@
 use bevy::{
     asset::AssetServer,
     ecs::{
-        schedule::{IntoScheduleConfigs, common_conditions},
+        schedule::IntoScheduleConfigs,
         system::{Commands, Res},
     },
+    log,
     prelude::*,
-    reflect::Reflect,
 };
-use bevy_hui::prelude::{HtmlComponents, HtmlFunctions, HtmlNode, TemplateProperties};
+use bevy_hui::prelude::{HtmlComponents, HtmlFunctions, HtmlNode, Tags, TemplateProperties};
 
 use crate::{
     camera::CameraSetup,
-    unit_managment::SelectUnitMessage,
-    units::{self, Unit},
+    unit_managment::{DeselectUnitMessage, SelectUnitMessage},
+    units::Unit,
 };
 
 pub struct UnitListPlugin;
@@ -20,11 +20,18 @@ pub struct UnitListPlugin;
 impl Plugin for UnitListPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup_unit_list.after(CameraSetup))
-            .add_systems(Update, (on_unit_selected, setup_unit_list_element));
+            .add_systems(
+                Update,
+                (
+                    on_unit_selected,
+                    on_unit_deselected,
+                    setup_unit_list_element,
+                ),
+            );
     }
 }
 
-const SELECT_UNIT_ELEMENT_FN: &str = "user_interface::unit_list::select_unit";
+const DESELECT_UNIT_ELEMENT_FN: &str = "user_interface::unit_list::deselect_unit";
 
 fn setup_unit_list(
     server: Res<AssetServer>,
@@ -48,20 +55,27 @@ fn setup_unit_list(
     );
 
     html_funcs.register(
-        SELECT_UNIT_ELEMENT_FN,
-        |input: In<Entity>, mut cmd: Commands| {
-            /*
-            cmd.entity(input.entity()).add(|cmd| {
-                if let Some(selected) = units::get_selected_unit() {
-                    cmd.insert(SelectUnitEvent { unit: selected });
-                }
-            }); */
+        DESELECT_UNIT_ELEMENT_FN,
+        |In(input): In<Entity>,
+        tags: Query<&Tags>,
+         mut cmd: MessageWriter<DeselectUnitMessage>| {
+            if let Some(tags) = tags.get(input.entity()).ok() {
+                let unit = tags.get("unit_id").unwrap();
+                cmd.write(DeselectUnitMessage {
+                    unit: Entity::from_bits(unit.parse().unwrap())
+                });
+            } else {
+                log::warn!(
+                    "Tried to deselect unit from unit list, but no UnitListElementComponent found on entity {:?}",
+                    input.entity()
+                );
+            }
         },
     );
 }
 
 fn on_unit_selected(
-    mut events: EventReader<SelectUnitMessage>,
+    mut events: MessageReader<SelectUnitMessage>,
     list_ui: Single<Entity, With<UnitListSlotMarker>>,
     mut commands: Commands,
     server: Res<AssetServer>,
@@ -71,9 +85,26 @@ fn on_unit_selected(
             parent.spawn((
                 HtmlNode(server.load("ui/templates/hud/unit_list/unit_list_element.html")),
                 UnitListElementComponent { unit: event.unit },
-                TemplateProperties::default().with("action", SELECT_UNIT_ELEMENT_FN),
+                TemplateProperties::default()
+                    .with("action", DESELECT_UNIT_ELEMENT_FN)
+                    .with("unit_id", &event.unit.to_bits().to_string()),
             ));
         });
+    }
+}
+
+fn on_unit_deselected(
+    mut events: MessageReader<DeselectUnitMessage>,
+    q: Query<(Entity, &UnitListElementComponent)>,
+    mut commands: Commands,
+) {
+    for event in events.read() {
+        log::info!("Deselecting unit from UI: {:?}", event.unit);
+        for (ent, element) in q.iter() {
+            if element.unit == event.unit {
+                commands.entity(ent).despawn();
+            }
+        }
     }
 }
 

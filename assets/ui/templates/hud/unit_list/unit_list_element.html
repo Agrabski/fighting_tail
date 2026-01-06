@@ -4,7 +4,10 @@
         value="Unit Name"
     />
     <property name="action" />
+    <property name="unit_id"/>
     <node>
-        <text on_press="{action}">{unit_name}</text>
+        <button on_press="{action}" tag:unit_id="{unit_id}">
+            <text>{unit_name}</text>
+        </button>
     </node>
 </template>
